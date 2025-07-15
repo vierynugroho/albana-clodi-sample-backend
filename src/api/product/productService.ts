@@ -603,6 +603,18 @@ class ProductService {
 		try {
 			let foundProducts: Partial<Product>[];
 
+			// Helper to check if any product is used in orderProduct
+			const isProductUsedInOrderProduct = async (productIds: string[]) => {
+				const used = await prismaClient().orderProduct.findFirst({
+					where: {
+						productId: {
+							in: productIds
+						}
+					}
+				});
+				return !!used;
+			};
+
 			if (req && Array.isArray(req.productIds) && req.productIds?.length > 0) {
 				// Delete multiple products
 				foundProducts = (await prismaClient().product.findMany({
@@ -613,17 +625,38 @@ class ProductService {
 					return ServiceResponse.failure("Products not found.", null, StatusCodes.NOT_FOUND);
 				}
 
+				// Check if any of the products are used in orderProduct
+				const used = await isProductUsedInOrderProduct(req.productIds);
+				if (used) {
+					return ServiceResponse.failure(
+						"Cannot delete product(s) because one or more are used in orderProduct.",
+						null,
+						StatusCodes.BAD_REQUEST
+					);
+				}
+
 				await prismaClient().product.deleteMany({
 					where: { id: { in: req.productIds } },
 				});
 			} else {
-				// Delete single product
-				foundProducts = (await prismaClient().product.findFirst({
+				const product = await prismaClient().product.findFirst({
 					where: { id: productId },
-				})) as unknown as Product[];
+				});
 
-				if (!foundProducts) {
+				if (!product) {
 					return ServiceResponse.failure("Product not found.", null, StatusCodes.NOT_FOUND);
+				}
+
+				foundProducts = [product as Product];
+
+				// Check if the product is used in orderProduct
+				const used = await isProductUsedInOrderProduct([productId]);
+				if (used) {
+					return ServiceResponse.failure(
+						"Cannot delete product because it is used in orderProduct.",
+						null,
+						StatusCodes.BAD_REQUEST
+					);
 				}
 
 				await prismaClient().product.delete({
