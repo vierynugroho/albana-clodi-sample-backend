@@ -1,6 +1,6 @@
 import type { Readable } from "node:stream";
 import type { ProductTypeEnum } from "@/common/enums/product/productTypeEnum";
-import { AwsService } from "@/common/libs/awsService";
+// import { AwsService } from "@/common/libs/awsService";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { generateBarcode } from "@/common/utils/bwipService";
 import { exportData } from "@/common/utils/dataExporter";
@@ -36,19 +36,19 @@ type VariantFieldType = {
 };
 
 class ProductService {
-  private readonly awsService;
+  //   private readonly awsService;
 
-  constructor(
-    initAws = new AwsService({
-      cloudCubeAccessKey: env.CLOUDCUBE_ACCESS_KEY,
-      cloudCubeBucket: env.CLOUDCUBE_BUCKET,
-      cloudCubeRegion: env.CLOUDCUBE_REGION,
-      cloudCubeSecretKey: env.CLOUDCUBE_SECRET_KEY,
-      cloudCubeUrl: env.CLOUDCUBE_URL,
-    })
-  ) {
-    this.awsService = initAws;
-  }
+  //   constructor(
+  //     initAws = new AwsService({
+  //       cloudCubeAccessKey: env.CLOUDCUBE_ACCESS_KEY,
+  //       cloudCubeBucket: env.CLOUDCUBE_BUCKET,
+  //       cloudCubeRegion: env.CLOUDCUBE_REGION,
+  //       cloudCubeSecretKey: env.CLOUDCUBE_SECRET_KEY,
+  //       cloudCubeUrl: env.CLOUDCUBE_URL,
+  //     })
+  //   ) {
+  //     this.awsService = initAws;
+  //   }
 
   public getAllProducts = async (query: RequestQueryProductType) => {
     try {
@@ -431,7 +431,8 @@ class ProductService {
                 path: "",
                 stream: {} as unknown as Readable,
               };
-              barcodeUrl = await this.awsService.uploadFile(barcodeFile);
+              barcodeUrl =
+                "https://ik.imagekit.io/vieryn/Albana/ALBANA%20PRODUCT.png?updatedAt=1756954124902";
             }
           }
 
@@ -440,10 +441,10 @@ class ProductService {
           if (req.productVariants?.length && files.length > 0) {
             for (let i = 0; i < req.productVariants.length; i++) {
               if (files[i]) {
-                const uploadedUrl = await this.awsService.uploadFile(files[i]);
-                imageUrls.push(uploadedUrl);
+                // const uploadedUrl = await this.awsService.uploadFile(files[i]);
+                // imageUrls.push(uploadedUrl);
               } else {
-                imageUrls.push(null);
+                // imageUrls.push(null);
               }
             }
           } else {
