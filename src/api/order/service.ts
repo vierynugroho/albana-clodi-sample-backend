@@ -20,281 +20,322 @@ interface GetAllOrdersParams {
 class OrderService {
 	public getAll = async (query: OrderQueryType["query"]) => {
 		try {
-			type OrderFilter = Prisma.OrderWhereInput;
+      type OrderFilter = Prisma.OrderWhereInput;
 
-			const filter: OrderFilter = {};
+      const filter: OrderFilter = {};
 
-			const queryParams = {
-				salesChannelId: query.salesChannelId as string | undefined,
-				customerCategory: query.customerCategory as string | undefined,
-				paymentStatus: query.paymentStatus as PaymentStatus | undefined,
-				productId: query.productId as string | undefined,
-				paymentMethodId: query.paymentMethodId as string | undefined,
-				orderDate: query.orderDate as string | undefined,
-				orderMonth: query.orderMonth as string | undefined,
-				orderYear: query.orderYear as string | undefined,
-				startDate: query.startDate as string | undefined,
-				endDate: query.endDate as string | undefined,
-				unavailableReceipt: query.unavailableReceipt as "yes" | null,
-				ordererCustomerId: query.ordererCustomerId as string | undefined,
-				deliveryTargetCustomerId: query.deliveryTargetCustomerId as string | undefined,
-				deliveryPlaceId: query.deliveryPlaceId as string | undefined,
-				orderStatus: query.orderStatus as string | undefined,
-				search: query.search as string | undefined,
-				sort: query.sort as string | undefined,
-				order: query.order as "asc" | "desc" | undefined,
-				orderId: query.orderId as string | undefined,
-				customerName: query.customerName as string | undefined,
-				productName: query.productName as string | undefined,
-				receiptNumber: query.receiptNumber as string | undefined,
-				phoneNumber: query.phoneNumber as string | undefined,
-				code: query.code as string | undefined,
-			};
+      const queryParams = {
+        salesChannelId: query.salesChannelId as string | undefined,
+        customerCategory: query.customerCategory as string | undefined,
+        paymentStatus: query.paymentStatus as PaymentStatus | undefined,
+        productId: query.productId as string | undefined,
+        paymentMethodId: query.paymentMethodId as string | undefined,
+        orderDate: query.orderDate as string | undefined,
+        orderMonth: query.orderMonth as string | undefined,
+        orderYear: query.orderYear as string | undefined,
+        startDate: query.startDate as string | undefined,
+        endDate: query.endDate as string | undefined,
+        unavailableReceipt: query.unavailableReceipt as "yes" | null,
+        ordererCustomerId: query.ordererCustomerId as string | undefined,
+        deliveryTargetCustomerId: query.deliveryTargetCustomerId as
+          | string
+          | undefined,
+        deliveryPlaceId: query.deliveryPlaceId as string | undefined,
+        orderStatus: query.orderStatus as string | undefined,
+        search: query.search as string | undefined,
+        sort: query.sort as string | undefined,
+        order: query.order as "asc" | "desc" | undefined,
+        orderId: query.orderId as string | undefined,
+        customerName: query.customerName as string | undefined,
+        productName: query.productName as string | undefined,
+        receiptNumber: query.receiptNumber as string | undefined,
+        phoneNumber: query.phoneNumber as string | undefined,
+        code: query.code as string | undefined,
+      };
 
-			// Filter berdasarkan sales channel
-			if (queryParams.salesChannelId) {
-				filter.salesChannelId = queryParams.salesChannelId;
-			}
+      // Filter berdasarkan sales channel
+      if (queryParams.salesChannelId) {
+        filter.salesChannelId = queryParams.salesChannelId;
+      }
 
-			// Filter berdasarkan tanggal order
-			if (queryParams.orderDate) {
-				const date = new Date(queryParams.orderDate);
-				filter.orderDate = {
-					gte: new Date(date.setHours(0, 0, 0, 0)),
-					lte: new Date(date.setHours(23, 59, 59, 999)),
-				};
-			}
+      // Filter berdasarkan tanggal order
+      if (queryParams.orderDate) {
+        const date = new Date(queryParams.orderDate);
+        filter.orderDate = {
+          gte: new Date(date.setHours(0, 0, 0, 0)),
+          lte: new Date(date.setHours(23, 59, 59, 999)),
+        };
+      }
 
-			// Filter berdasarkan bulan dan tahun
-			if (queryParams.orderMonth) {
-				const month = Number.parseInt(queryParams.orderMonth);
-				filter.orderDate = {
-					gte: new Date(new Date().getFullYear(), month - 1, 1),
-					lte: new Date(new Date().getFullYear(), month, 0, 23, 59, 59, 999),
-				};
-			}
+      // Filter berdasarkan bulan dan tahun
+      if (queryParams.orderMonth) {
+        const month = Number.parseInt(queryParams.orderMonth);
+        filter.orderDate = {
+          gte: new Date(new Date().getFullYear(), month - 1, 1),
+          lte: new Date(new Date().getFullYear(), month, 0, 23, 59, 59, 999),
+        };
+      }
 
-			if (queryParams.orderYear) {
-				// Filter hanya berdasarkan tahun
-				const year = Number.parseInt(queryParams.orderYear);
-				filter.orderDate = {
-					gte: new Date(year, 0, 1),
-					lte: new Date(year, 11, 31, 23, 59, 59, 999),
-				};
-			}
+      if (queryParams.orderYear) {
+        // Filter hanya berdasarkan tahun
+        const year = Number.parseInt(queryParams.orderYear);
+        filter.orderDate = {
+          gte: new Date(year, 0, 1),
+          lte: new Date(year, 11, 31, 23, 59, 59, 999),
+        };
+      }
 
-			// Filter berdasarkan range tanggal
-			if (queryParams.startDate && queryParams.endDate) {
-				filter.orderDate = {
-					gte: new Date(new Date(queryParams.startDate).setHours(0, 0, 0, 0)),
-					lte: new Date(new Date(queryParams.endDate).setHours(23, 59, 59, 999)),
-				};
-			}
+      // Filter berdasarkan range tanggal
+      if (queryParams.startDate && queryParams.endDate) {
+        filter.orderDate = {
+          gte: new Date(new Date(queryParams.startDate).setHours(0, 0, 0, 0)),
+          lte: new Date(
+            new Date(queryParams.endDate).setHours(23, 59, 59, 999)
+          ),
+        };
+      }
 
-			// Filter berdasarkan kategori customer
-			if (queryParams.customerCategory) {
-				filter.OR = [
-					{
-						OrdererCustomer: {
-							is: { category: { equals: queryParams.customerCategory as CustomerCategories } },
-						},
-					},
-					{
-						DeliveryTargetCustomer: {
-							is: { category: { equals: queryParams.customerCategory as CustomerCategories } },
-						},
-					},
-				];
-			}
+      // Filter berdasarkan kategori customer
+      if (queryParams.customerCategory) {
+        filter.OR = [
+          {
+            OrdererCustomer: {
+              is: {
+                category: {
+                  equals: queryParams.customerCategory as CustomerCategories,
+                },
+              },
+            },
+          },
+          {
+            DeliveryTargetCustomer: {
+              is: {
+                category: {
+                  equals: queryParams.customerCategory as CustomerCategories,
+                },
+              },
+            },
+          },
+        ];
+      }
 
-			// Filter berdasarkan orderer customer
-			if (queryParams.ordererCustomerId) {
-				filter.ordererCustomerId = queryParams.ordererCustomerId;
-			}
+      // Filter berdasarkan orderer customer
+      if (queryParams.ordererCustomerId) {
+        filter.ordererCustomerId = queryParams.ordererCustomerId;
+      }
 
-			// Filter berdasarkan delivery target customer
-			if (queryParams.deliveryTargetCustomerId) {
-				filter.deliveryTargetCustomerId = queryParams.deliveryTargetCustomerId;
-			}
+      // Filter berdasarkan delivery target customer
+      if (queryParams.deliveryTargetCustomerId) {
+        filter.deliveryTargetCustomerId = queryParams.deliveryTargetCustomerId;
+      }
 
-			// Filter berdasarkan delivery place
-			if (queryParams.deliveryPlaceId) {
-				filter.deliveryPlaceId = queryParams.deliveryPlaceId;
-			}
+      // Filter berdasarkan delivery place
+      if (queryParams.deliveryPlaceId) {
+        filter.deliveryPlaceId = queryParams.deliveryPlaceId;
+      }
 
-			if (queryParams.orderStatus) {
-				const validPaymentStatuses = ["settlement", "pending", "cancel", "installments"];
-				const paymentStatus = validPaymentStatuses.includes(queryParams.orderStatus)
-					? (queryParams.orderStatus as PaymentStatus)
-					: undefined;
+      if (queryParams.orderStatus) {
+        const validPaymentStatuses = [
+          "settlement",
+          "pending",
+          "cancel",
+          "installments",
+        ];
+        const paymentStatus = validPaymentStatuses.includes(
+          queryParams.orderStatus
+        )
+          ? (queryParams.orderStatus as PaymentStatus)
+          : undefined;
 
-				if (paymentStatus) {
-					if (!filter.OrderDetail) {
-						filter.OrderDetail = {};
-					}
-					filter.OrderDetail.paymentStatus = paymentStatus;
-				}
-			}
+        if (paymentStatus) {
+          if (!filter.OrderDetail) {
+            filter.OrderDetail = {};
+          }
+          filter.OrderDetail.paymentStatus = paymentStatus;
+        }
+      }
 
-			if (queryParams.unavailableReceipt === "yes") {
-				if (!filter.OrderDetail) {
-					filter.OrderDetail = {};
-				}
-				filter.OrderDetail.receiptNumber = null;
-			}
+      if (queryParams.unavailableReceipt === "yes") {
+        if (!filter.OrderDetail) {
+          filter.OrderDetail = {};
+        }
+        filter.OrderDetail.receiptNumber = null;
+      }
 
-			// Filter berdasarkan ID order
-			if (queryParams.orderId) {
-				filter.id = queryParams.orderId;
-			}
+      // Filter berdasarkan ID order
+      if (queryParams.orderId) {
+        filter.id = queryParams.orderId;
+      }
 
-			// Filter by order code
-			if (queryParams.code) {
-				if (!filter.OrderDetail) {
-					filter.OrderDetail = {};
-				}
+      // Filter by order code
+      if (queryParams.code) {
+        if (!filter.OrderDetail) {
+          filter.OrderDetail = {};
+        }
 
-				filter.OrderDetail.code = {
-					contains: queryParams.code,
-					mode: "insensitive" as const,
-				};
-			}
+        filter.OrderDetail.code = {
+          contains: queryParams.code,
+          mode: "insensitive" as const,
+        };
+      }
 
-			// Filter berdasarkan nama pelanggan
-			if (queryParams.customerName) {
-				const customerNameFilter = {
-					name: {
-						contains: queryParams.customerName,
-						mode: "insensitive" as const,
-					},
-				};
+      // Filter berdasarkan nama pelanggan
+      if (queryParams.customerName) {
+        const customerNameFilter = {
+          name: {
+            contains: queryParams.customerName,
+            mode: "insensitive" as const,
+          },
+        };
 
-				filter.OR = [
-					...(filter.OR || []),
-					{ OrdererCustomer: customerNameFilter },
-					{ DeliveryTargetCustomer: customerNameFilter },
-				];
-			}
+        filter.OR = [
+          ...(filter.OR || []),
+          { OrdererCustomer: customerNameFilter },
+          { DeliveryTargetCustomer: customerNameFilter },
+        ];
+      }
 
-			// Filter berdasarkan nama produk
-			if (queryParams.productName) {
-				if (!filter.OrderDetail) {
-					filter.OrderDetail = {};
-				}
+      // Filter berdasarkan nama produk
+      if (queryParams.productName) {
+        if (!filter.OrderDetail) {
+          filter.OrderDetail = {};
+        }
 
-				filter.OrderDetail.OrderProducts = {
-					some: {
-						Product: {
-							name: {
-								contains: queryParams.productName,
-								mode: "insensitive" as const,
-							},
-						},
-					},
-				};
-			}
+        filter.OrderDetail.OrderProducts = {
+          some: {
+            Product: {
+              name: {
+                contains: queryParams.productName,
+                mode: "insensitive" as const,
+              },
+            },
+          },
+        };
+      }
 
-			// Filter berdasarkan nomor resi
-			if (queryParams.receiptNumber) {
-				if (!filter.OrderDetail) {
-					filter.OrderDetail = {};
-				}
+      // Filter berdasarkan nomor resi
+      if (queryParams.receiptNumber) {
+        if (!filter.OrderDetail) {
+          filter.OrderDetail = {};
+        }
 
-				filter.OrderDetail.receiptNumber = {
-					contains: queryParams.receiptNumber,
-					mode: "insensitive" as const,
-				};
-			}
+        filter.OrderDetail.receiptNumber = {
+          contains: queryParams.receiptNumber,
+          mode: "insensitive" as const,
+        };
+      }
 
-			// Filter berdasarkan nomor telepon
-			if (queryParams.phoneNumber) {
-				const phoneNumberFilter = {
-					phoneNumber: {
-						contains: queryParams.phoneNumber,
-						mode: "insensitive" as const,
-					},
-				};
+      // Filter berdasarkan nomor telepon
+      if (queryParams.phoneNumber) {
+        const phoneNumberFilter = {
+          phoneNumber: {
+            contains: queryParams.phoneNumber,
+            mode: "insensitive" as const,
+          },
+        };
 
-				if (!filter.OR) {
-					filter.OR = [];
-				} else if (!Array.isArray(filter.OR)) {
-					filter.OR = [filter.OR];
-				}
+        if (!filter.OR) {
+          filter.OR = [];
+        } else if (!Array.isArray(filter.OR)) {
+          filter.OR = [filter.OR];
+        }
 
-				filter.OR.push({ OrdererCustomer: phoneNumberFilter }, { DeliveryTargetCustomer: phoneNumberFilter });
-			}
+        filter.OR.push(
+          { OrdererCustomer: phoneNumberFilter },
+          { DeliveryTargetCustomer: phoneNumberFilter }
+        );
+      }
 
-			// Buat query untuk mendapatkan semua data dalam satu kali query
-			const orders = await prismaClient().order.findMany({
-				where: filter,
-				orderBy: {
-					createdAt: "desc",
-				},
-				include: {
-					SalesChannel: true,
-					DeliveryPlace: true,
-					OrdererCustomer: true,
-					DeliveryTargetCustomer: true,
-					Installment: true,
-					OrderDetail: {
-						include: {
-							PaymentMethod: queryParams.paymentMethodId
-								? {
-										where: {
-											id: queryParams.paymentMethodId,
-										},
-									}
-								: true,
-							OrderProducts: {
-								where: queryParams.productId ? { productId: queryParams.productId } : undefined,
-								include: {
-									Product: {
-										include: {
-											productVariants: true,
-										},
-									},
-								},
-							},
-						},
-						where: queryParams.paymentStatus ? { paymentStatus: queryParams.paymentStatus } : undefined,
-					},
-					ShippingServices: true,
-				},
-			});
+      // Buat query untuk mendapatkan semua data dalam satu kali query
+      const orders = await prismaClient().order.findMany({
+        where: filter,
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          SalesChannel: true,
+          DeliveryPlace: true,
+          OrdererCustomer: true,
+          DeliveryTargetCustomer: true,
+          Installment: true,
+          OrderDetail: {
+            include: {
+              PaymentMethod: queryParams.paymentMethodId
+                ? {
+                    where: {
+                      id: queryParams.paymentMethodId,
+                    },
+                  }
+                : true,
+              OrderProducts: {
+                where: queryParams.productId
+                  ? { productId: queryParams.productId }
+                  : undefined,
+                include: {
+                  Product: {
+                    include: {
+                      productVariants: true,
+                    },
+                  },
+                },
+              },
+            },
+            where: queryParams.paymentStatus
+              ? { paymentStatus: queryParams.paymentStatus }
+              : undefined,
+          },
+          ShippingServices: true,
+        },
+      });
 
-			// Transformasi data untuk mempertahankan struktur respons yang sama
-			const result = orders.map((order) => ({
-				...order,
-				Installment:
-					order?.Installment && Array.isArray(order.Installment) && order.Installment.length > 0
-						? order.Installment
-						: null,
-				OrderDetail: order.OrderDetail
-					? {
-							...order.OrderDetail,
-							OrderProducts: order.OrderDetail.OrderProducts,
-						}
-					: null,
-			}));
+      // Transformasi data untuk mempertahankan struktur respons yang sama
+      const result = orders.map((order) => ({
+        ...order,
+        Installment:
+          order?.Installment &&
+          Array.isArray(order.Installment) &&
+          order.Installment.length > 0
+            ? order.Installment
+            : null,
+        OrderDetail: order.OrderDetail
+          ? {
+              ...order.OrderDetail,
+              OrderProducts: order.OrderDetail.OrderProducts,
+            }
+          : null,
+      }));
 
-			// Filter hasil jika ada filter untuk payment method atau product
-			let filteredResult = result;
+      // Filter hasil jika ada filter untuk payment method atau product
+      let filteredResult = result;
 
-			if (queryParams.paymentMethodId || queryParams.paymentStatus) {
-				filteredResult = result.filter((order) => order.OrderDetail && order.OrderDetail.PaymentMethod !== null);
-			}
+      if (queryParams.paymentMethodId || queryParams.paymentStatus) {
+        filteredResult = result.filter(
+          (order) =>
+            order.OrderDetail && order.OrderDetail.PaymentMethod !== null
+        );
+      }
 
-			if (queryParams.productId) {
-				filteredResult = filteredResult.filter(
-					(order) => order.OrderDetail && order.OrderDetail.OrderProducts.length > 0,
-				);
-			}
+      if (queryParams.productId) {
+        filteredResult = filteredResult.filter(
+          (order) =>
+            order.OrderDetail && order.OrderDetail.OrderProducts.length > 0
+        );
+      }
 
-			return ServiceResponse.success("Berhasil mengambil data order", filteredResult, StatusCodes.OK);
-		} catch (error) {
-			logger.error(error);
-			return ServiceResponse.failure("Gagal mengambil data order", null, StatusCodes.INTERNAL_SERVER_ERROR);
-		}
+      return ServiceResponse.success(
+        "Berhasil mengambil data order",
+        filteredResult,
+        StatusCodes.OK
+      );
+    } catch (error) {
+      console.error(error);
+      logger.error(error);
+      return ServiceResponse.failure(
+        "Gagal mengambil data order",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
 	};
 
 	public getOne = async (id: string) => {
@@ -334,7 +375,8 @@ class OrderService {
 			}
 
 			return ServiceResponse.success("Berhasil mengambil data order", result, StatusCodes.OK);
-		} catch (error) {
+    } catch (error) {
+      console.error(error)
 			logger.error(error);
 			return ServiceResponse.failure("Gagal mengambil data order", null, StatusCodes.INTERNAL_SERVER_ERROR);
 		}
@@ -822,7 +864,8 @@ class OrderService {
 			});
 
 			return ServiceResponse.success("Berhasil membuat data order", result, StatusCodes.CREATED);
-		} catch (error) {
+    } catch (error) {
+      console.error(error)
 			logger.error(error);
 			return ServiceResponse.failure(
 				"Gagal membuat data order",
@@ -1369,7 +1412,8 @@ class OrderService {
 			});
 
 			return ServiceResponse.success("Berhasil mengupdate data order", result, StatusCodes.OK);
-		} catch (error) {
+    } catch (error) {
+      console.error(error)
 			logger.error(error);
 			return ServiceResponse.failure(
 				"Gagal mengupdate data order",
@@ -1427,7 +1471,8 @@ class OrderService {
 			});
 
 			return ServiceResponse.success("Berhasil menghapus data order", result, StatusCodes.OK);
-		} catch (error) {
+    } catch (error) {
+      console.error(error)
 			logger.error(error);
 			return ServiceResponse.failure(
 				"Gagal menghapus data order",

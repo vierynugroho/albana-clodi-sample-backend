@@ -4,13 +4,13 @@ import { z } from "zod";
 extendZodWithOpenApi(z);
 
 export const ExpensesSchema = z.object({
-	id: z.string().uuid().optional(),
-	itemName: z.string().optional(),
-	itemPrice: z.number().optional(),
-	expenseDate: z.string().optional(),
-	qty: z.number().int().optional(),
-	personResponsible: z.string().optional(),
-	note: z.string().optional(),
+  id: z.string().uuid().optional(),
+  itemName: z.string().optional(),
+  itemPrice: z.number().optional(),
+  expenseDate: z.coerce.date().optional(),
+  qty: z.number().int().optional(),
+  personResponsible: z.string().optional(),
+  note: z.string().optional(),
 });
 
 export type Expenses = z.infer<typeof ExpensesSchema>;
