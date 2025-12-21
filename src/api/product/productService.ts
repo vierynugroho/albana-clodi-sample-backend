@@ -299,6 +299,7 @@ class ProductService {
         StatusCodes.OK
       );
     } catch (ex) {
+      console.error(ex);
       const errorMessage = `Error get all products: ${(ex as Error).message}`;
       return ServiceResponse.failure(
         "An error occurred while get all products.",
@@ -336,6 +337,7 @@ class ProductService {
         StatusCodes.OK
       );
     } catch (ex) {
+      console.error(ex);
       const errorMessage = `Error get all products: ${(ex as Error).message}`;
       return ServiceResponse.failure(
         "An error occurred while get all products.",
@@ -505,6 +507,7 @@ class ProductService {
         StatusCodes.CREATED
       );
     } catch (ex) {
+      console.error(ex);
       const errorMessage = `Error creating product: ${(ex as Error).message}`;
       return ServiceResponse.failure(
         "An error occurred while creating product.",
@@ -684,6 +687,7 @@ class ProductService {
         StatusCodes.OK
       );
     } catch (ex) {
+      console.error(ex);
       const errorMessage = `Error updating product: ${(ex as Error).message}`;
       return ServiceResponse.failure(
         "An error occurred while updating product.",
@@ -775,6 +779,7 @@ class ProductService {
         StatusCodes.OK
       );
     } catch (ex) {
+      console.error(ex);
       const errorMessage = `Error deleting product: ${(ex as Error).message}`;
       return ServiceResponse.failure(
         "An error occurred while deleting product.",
