@@ -37,7 +37,10 @@ app.set("trust proxy", true);
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// app.use(cors());
+// split ,. example: "http://localhost:8080,http:/localhost:3000,http://localhost:3001"
+app.use(cors({
+  origin: env.CORS_ORIGIN.split(","),
+}));
 
 app.use(compression());
 
