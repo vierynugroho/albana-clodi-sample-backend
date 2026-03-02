@@ -281,7 +281,7 @@ class ProductService {
             variant: productVariants,
             price: variant.productPrices[0],
           };
-        })
+        }),
       );
 
       const response: PaginatedResponse<Product> = {
@@ -296,7 +296,7 @@ class ProductService {
       return ServiceResponse.success(
         "Products retrieved successfully.",
         response,
-        StatusCodes.OK
+        StatusCodes.OK,
       );
     } catch (ex) {
       console.error(ex);
@@ -304,7 +304,7 @@ class ProductService {
       return ServiceResponse.failure(
         "An error occurred while get all products.",
         errorMessage,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
@@ -327,14 +327,14 @@ class ProductService {
         return ServiceResponse.failure(
           "Product is not exist.",
           null,
-          StatusCodes.NOT_FOUND
+          StatusCodes.NOT_FOUND,
         );
       }
 
       return ServiceResponse.success(
         "Product retrieved successfully.",
         foundProduct,
-        StatusCodes.OK
+        StatusCodes.OK,
       );
     } catch (ex) {
       console.error(ex);
@@ -342,14 +342,14 @@ class ProductService {
       return ServiceResponse.failure(
         "An error occurred while get all products.",
         errorMessage,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
 
   public createProduct = async (
     req: CreateProductType,
-    files: Express.Multer.File[]
+    files: Express.Multer.File[],
   ) => {
     // Check if product with the same name already exists
     const foundProduct = await prismaClient().product.findFirst({
@@ -376,7 +376,7 @@ class ProductService {
       return ServiceResponse.failure(
         "Product already exists",
         null,
-        StatusCodes.BAD_REQUEST
+        StatusCodes.BAD_REQUEST,
       );
     }
 
@@ -389,7 +389,7 @@ class ProductService {
       return ServiceResponse.failure(
         "Category is not found",
         null,
-        StatusCodes.NOT_FOUND
+        StatusCodes.NOT_FOUND,
       );
     }
 
@@ -407,7 +407,7 @@ class ProductService {
       return ServiceResponse.failure(
         "The purchase price cannot be greater than the normal or reseller price.",
         null,
-        StatusCodes.BAD_REQUEST
+        StatusCodes.BAD_REQUEST,
       );
     }
 
@@ -451,7 +451,7 @@ class ProductService {
             }
           } else {
             imageUrls.push(
-              ...Array(req.productVariants?.length || 0).fill(null)
+              ...Array(req.productVariants?.length || 0).fill(null),
             );
           }
 
@@ -496,15 +496,15 @@ class ProductService {
                     : undefined,
                 },
               });
-            })
+            }),
           );
-        }
+        },
       );
 
       return ServiceResponse.success(
         "Product created successfully.",
         newProduct,
-        StatusCodes.CREATED
+        StatusCodes.CREATED,
       );
     } catch (ex) {
       console.error(ex);
@@ -512,7 +512,7 @@ class ProductService {
       return ServiceResponse.failure(
         "An error occurred while creating product.",
         errorMessage,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
@@ -520,7 +520,7 @@ class ProductService {
   public updateProduct = async (
     req: UpdateProductType,
     productId: string,
-    files: Express.Multer.File[]
+    files: Express.Multer.File[],
   ) => {
     try {
       // Verify product exists before attempting update
@@ -536,7 +536,7 @@ class ProductService {
         return ServiceResponse.failure(
           "Product not found",
           null,
-          StatusCodes.NOT_FOUND
+          StatusCodes.NOT_FOUND,
         );
       }
 
@@ -554,7 +554,7 @@ class ProductService {
         return ServiceResponse.failure(
           "The purchase price cannot be greater than the normal or reseller price.",
           null,
-          StatusCodes.BAD_REQUEST
+          StatusCodes.BAD_REQUEST,
         );
       }
 
@@ -675,16 +675,16 @@ class ProductService {
                     },
                   });
                 }
-              })
+              }),
             );
           }
-        }
+        },
       );
 
       return ServiceResponse.success(
         "Product updated successfully.",
         existingProduct,
-        StatusCodes.OK
+        StatusCodes.OK,
       );
     } catch (ex) {
       console.error(ex);
@@ -692,14 +692,14 @@ class ProductService {
       return ServiceResponse.failure(
         "An error occurred while updating product.",
         errorMessage,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
 
   public deleteProduct = async (
     productId: string,
-    req: DeleteProductManyType
+    req: DeleteProductManyType,
   ) => {
     try {
       let foundProducts: Partial<Product>[];
@@ -726,7 +726,7 @@ class ProductService {
           return ServiceResponse.failure(
             "Products not found.",
             null,
-            StatusCodes.NOT_FOUND
+            StatusCodes.NOT_FOUND,
           );
         }
 
@@ -736,7 +736,7 @@ class ProductService {
           return ServiceResponse.failure(
             "Cannot delete product(s) because one or more are used in orderProduct.",
             null,
-            StatusCodes.BAD_REQUEST
+            StatusCodes.BAD_REQUEST,
           );
         }
 
@@ -752,7 +752,7 @@ class ProductService {
           return ServiceResponse.failure(
             "Product not found.",
             null,
-            StatusCodes.NOT_FOUND
+            StatusCodes.NOT_FOUND,
           );
         }
 
@@ -764,7 +764,7 @@ class ProductService {
           return ServiceResponse.failure(
             "Cannot delete product because it is used in orderProduct.",
             null,
-            StatusCodes.BAD_REQUEST
+            StatusCodes.BAD_REQUEST,
           );
         }
 
@@ -776,7 +776,7 @@ class ProductService {
       return ServiceResponse.success(
         "Product deleted successfully.",
         foundProducts,
-        StatusCodes.OK
+        StatusCodes.OK,
       );
     } catch (ex) {
       console.error(ex);
@@ -784,22 +784,21 @@ class ProductService {
       return ServiceResponse.failure(
         "An error occurred while deleting product.",
         errorMessage,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
 
   public exportProducts = async (query: RequestQueryProductType) => {
     try {
-      const formatter = new Intl.DateTimeFormat("id-ID", {
-        timeZone: "Asia/Jakarta",
-        dateStyle: "short",
-      });
-
       const exportParams = {
         ...query,
-        startDate: query.startDate?.toISOString().split("T")[0],
-        endDate: query.endDate?.toISOString().split("T")[0],
+        startDate: query.startDate
+          ? new Date(query.startDate).toISOString()
+          : new Date().toISOString(),
+        endDate: query.endDate
+          ? new Date(query.endDate).toISOString()
+          : new Date().toISOString(),
       };
 
       return exportData<
@@ -817,6 +816,7 @@ class ProductService {
       >(
         exportParams,
         async (where) => {
+          console.log({ where });
           const products = await prismaClient().product.findMany({
             where: where as Prisma.ProductWhereInput,
             orderBy: { createdAt: "desc" },
@@ -846,7 +846,7 @@ class ProductService {
               acc.size.push(v.size as string);
               acc.color.push(v.color as string);
               acc.sku.push(v.sku as string);
-              acc.imageUrl.push(v.imageUrl as string);
+              acc.imageUrl.push(v.imageUrl ?? "");
               acc.stock.push(v.stock as number);
               const buys =
                 v.productPrices
@@ -886,7 +886,7 @@ class ProductService {
               agent: [],
               normal: [],
               reseller: [],
-            } as VariantFieldType
+            } as VariantFieldType,
           );
 
           return {
@@ -897,7 +897,7 @@ class ProductService {
             Warna: variantFields.color.join(", ") ?? null,
             Deskripsi: product.description ?? null,
             SKU: variantFields.sku.join(", ") ?? null,
-            Gambar: variantFields.imageUrl ?? null,
+            Gambar: variantFields.imageUrl.filter(Boolean).join(", ") || null,
             "Harga Beli (Harga Modal)": variantFields.buy.join(", ") ?? null,
             "Harga Jual": variantFields.normal.join(", ") ?? null,
             "Harga Member": variantFields.member.join(", ") ?? null,
@@ -905,23 +905,24 @@ class ProductService {
             "Harga Reseller": variantFields.reseller.join(", ") ?? null,
             "Jumlah Stok": variantFields.stock.join(", ") ?? null,
             "Diskon Produk": product.ProductDiscount.map(
-              (discount: ProductDiscount) => discount.value
+              (discount: ProductDiscount) => discount.value,
             ).join(","),
             "Tipe Diskon": product.ProductDiscount.map(
-              (discount: ProductDiscount) => discount.type
+              (discount: ProductDiscount) => discount.type,
             ).join(","),
             "Berat (gram)": product.weight ?? null,
           };
         },
         "Produk",
-        "Tidak ada data produk untuk di ekspor."
+        "Tidak ada data produk untuk di ekspor.",
       );
     } catch (ex) {
+      console.error({ ex });
       const errorMessage = `Error exporting product: ${(ex as Error).message}`;
       return ServiceResponse.failure(
         "An error occurred while exporting product.",
         errorMessage,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
@@ -1034,24 +1035,24 @@ class ProductService {
                     category: true,
                     ProductDiscount: true,
                   },
-                })
-              )
+                }),
+              ),
             );
           }
-        }
+        },
       );
 
       return ServiceResponse.success(
         "Berhasil mengimpor data product",
         importResult.responseObject?.length,
-        StatusCodes.OK
+        StatusCodes.OK,
       );
     } catch (ex) {
       const errorMessage = `Error exporting product: ${(ex as Error).message}`;
       return ServiceResponse.failure(
         "An error occurred while exporting product.",
         errorMessage,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };

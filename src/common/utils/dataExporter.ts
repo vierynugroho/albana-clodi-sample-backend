@@ -4,11 +4,11 @@ import { StatusCodes } from "http-status-codes";
 import xlsx from "xlsx";
 
 interface ExportParams {
-	startDate?: string;
-	endDate?: string;
-	month?: string;
-	year?: string;
-	week?: string;
+  startDate?: string;
+  endDate?: string;
+  month?: string;
+  year?: string;
+  week?: string;
 }
 
 /**
@@ -21,137 +21,159 @@ interface ExportParams {
  * @returns ServiceResponse dengan buffer file Excel dan nama file
  */
 export const exportData = async <T>(
-	params: ExportParams,
-	fetchData: (where: Record<string, unknown>) => Promise<T[]>,
-	mapFunction: (item: T, index: number) => Record<string, unknown>,
-	sheetName = "Data",
-	emptyMessage = "Tidak ada data untuk diekspor",
+  params: ExportParams,
+  fetchData: (where: Record<string, unknown>) => Promise<T[]>,
+  mapFunction: (item: T, index: number) => Record<string, unknown>,
+  sheetName = "Data",
+  emptyMessage = "Tidak ada data untuk diekspor",
 ) => {
-	try {
-		const { startDate, endDate, month, year, week } = params;
-		let where: { createdAt?: { gte?: Date; lte?: Date; lt?: Date } } = {};
+  try {
+    const { startDate, endDate, month, year, week } = params;
+    let where: { createdAt?: { gte?: Date; lte?: Date; lt?: Date } } = {};
 
-		if (startDate && endDate) {
-			where = {
-				...where,
-				createdAt: {
-					gte: new Date(startDate),
-					lte: new Date(endDate),
-				},
-			};
-		}
+    if (startDate && endDate) {
+      where = {
+        ...where,
+        createdAt: {
+          gte: new Date(startDate),
+          lte: new Date(endDate),
+        },
+      };
+    }
 
-		if (month) {
-			const monthNumber = Number.parseInt(month, 10) - 1;
-			const yearNumber = year ? Number.parseInt(year, 10) : new Date().getFullYear();
+    if (month) {
+      const monthNumber = Number.parseInt(month, 10) - 1;
+      const yearNumber = year
+        ? Number.parseInt(year, 10)
+        : new Date().getFullYear();
 
-			where = {
-				...where,
-				createdAt: {
-					...(where.createdAt || {}),
-					gte: new Date(yearNumber, monthNumber, 1),
-					lt: new Date(yearNumber, monthNumber + 1, 1),
-				},
-			};
-		}
+      where = {
+        ...where,
+        createdAt: {
+          ...(where.createdAt || {}),
+          gte: new Date(yearNumber, monthNumber, 1),
+          lt: new Date(yearNumber, monthNumber + 1, 1),
+        },
+      };
+    }
 
-		if (year && !month && !week) {
-			const yearNumber = Number.parseInt(year, 10);
+    if (year && !month && !week) {
+      const yearNumber = Number.parseInt(year, 10);
 
-			where = {
-				...where,
-				createdAt: {
-					...(where.createdAt || {}),
-					gte: new Date(yearNumber, 0, 1),
-					lt: new Date(yearNumber + 1, 0, 1),
-				},
-			};
-		}
+      where = {
+        ...where,
+        createdAt: {
+          ...(where.createdAt || {}),
+          gte: new Date(yearNumber, 0, 1),
+          lt: new Date(yearNumber + 1, 0, 1),
+        },
+      };
+    }
 
-		if (week) {
-			const weekNumber = Number.parseInt(week, 10);
-			const yearNumber = year ? Number.parseInt(year, 10) : new Date().getFullYear();
+    if (week) {
+      const weekNumber = Number.parseInt(week, 10);
+      const yearNumber = year
+        ? Number.parseInt(year, 10)
+        : new Date().getFullYear();
 
-			const firstDayOfYear = new Date(yearNumber, 0, 1);
-			const daysToAdd = (weekNumber - 1) * 7;
+      const firstDayOfYear = new Date(yearNumber, 0, 1);
+      const daysToAdd = (weekNumber - 1) * 7;
 
-			const weekStart = new Date(firstDayOfYear);
-			weekStart.setDate(firstDayOfYear.getDate() + daysToAdd);
+      const weekStart = new Date(firstDayOfYear);
+      weekStart.setDate(firstDayOfYear.getDate() + daysToAdd);
 
-			const weekEnd = new Date(weekStart);
-			weekEnd.setDate(weekStart.getDate() + 6);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
 
-			where = {
-				...where,
-				createdAt: {
-					...(where.createdAt || {}),
-					gte: weekStart,
-					lte: weekEnd,
-				},
-			};
-		}
+      where = {
+        ...where,
+        createdAt: {
+          ...(where.createdAt || {}),
+          gte: weekStart,
+          lte: weekEnd,
+        },
+      };
+    }
 
-		const items = await fetchData(where);
+    const items = await fetchData(where);
 
-		if (!items.length) {
-			return ServiceResponse.failure(emptyMessage, null, StatusCodes.NOT_FOUND);
-		}
+    if (!items.length) {
+      return ServiceResponse.failure(emptyMessage, null, StatusCodes.NOT_FOUND);
+    }
 
-		const data = items.map(mapFunction);
+    const data = items.map(mapFunction);
 
-		// Buat worksheet dan workbook
-		const worksheet = xlsx.utils.json_to_sheet(data);
-		const workbook = xlsx.utils.book_new();
-		// Buat nama sheet dengan tambahan parameter yang digunakan
-		let sheetNameWithParams = sheetName;
+    // Buat worksheet dan workbook
+    const worksheet = xlsx.utils.json_to_sheet(data);
+    const workbook = xlsx.utils.book_new();
+    // Buat nama sheet dengan tambahan parameter yang digunakan
+    let sheetNameWithParams = sheetName;
 
-		if (year) {
-			sheetNameWithParams += ` - ${year}`;
-		}
+    if (year) {
+      sheetNameWithParams += ` - ${year}`;
+    }
 
-		if (month) {
-			const monthNames = [
-				"January",
-				"February",
-				"March",
-				"April",
-				"May",
-				"June",
-				"July",
-				"August",
-				"September",
-				"October",
-				"November",
-				"December",
-			];
-			const monthNumber = Number.parseInt(month, 10);
-			const monthName = monthNames[monthNumber - 1];
-			sheetNameWithParams += year ? ` ${monthName}` : ` - ${monthName} ${new Date().getFullYear()}`;
-		}
+    if (month) {
+      const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      const monthNumber = Number.parseInt(month, 10);
+      const monthName = monthNames[monthNumber - 1];
+      sheetNameWithParams += year
+        ? ` ${monthName}`
+        : ` - ${monthName} ${new Date().getFullYear()}`;
+    }
 
-		if (week) {
-			sheetNameWithParams += year ? ` Week ${week}` : ` - Week ${week} ${new Date().getFullYear()}`;
-		}
+    if (week) {
+      sheetNameWithParams += year
+        ? ` Week ${week}`
+        : ` - Week ${week} ${new Date().getFullYear()}`;
+    }
 
-		if (startDate && endDate) {
-			sheetNameWithParams += ` - ${startDate} s/d ${endDate}`;
-		}
+    if (startDate && endDate) {
+      // hanya ambil tanggal, bulan, tahun, nama tidak boleh lebih dari 31 char
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const startStr = `${start.getDate()}-${start.getMonth() + 1}-${start.getFullYear()}`;
+      const endStr = `${end.getDate()}-${end.getMonth() + 1}-${end.getFullYear()}`;
+      sheetNameWithParams += ` - ${startStr} to ${endStr}`;
+    }
 
-		xlsx.utils.book_append_sheet(workbook, worksheet, sheetNameWithParams);
+    xlsx.utils.book_append_sheet(workbook, worksheet, sheetNameWithParams);
 
-		const buffer = xlsx.write(workbook, {
-			type: "buffer",
-			bookType: "xlsx",
-		});
+    const buffer = xlsx.write(workbook, {
+      type: "buffer",
+      bookType: "xlsx",
+    });
 
-		// Tambahkan nama file yang sama dengan nama sheet
-		const fileName = `${sheetNameWithParams.replace(/\s/g, "_")}.xlsx`;
+    // Tambahkan nama file yang sama dengan nama sheet
+    const fileName = `${sheetNameWithParams.replace(/\s/g, "_")}.xlsx`;
 
-		return ServiceResponse.success("Berhasil mengekspor data", { buffer, fileName }, StatusCodes.OK);
-	} catch (error) {
-		logger.error(error);
-		return ServiceResponse.failure("Gagal mengekspor data", null, StatusCodes.INTERNAL_SERVER_ERROR);
-	}
+    return ServiceResponse.success(
+      "Berhasil mengekspor data",
+      { buffer, fileName },
+      StatusCodes.OK,
+    );
+  } catch (error) {
+    console.error({ error });
+    logger.error(error);
+    return ServiceResponse.failure(
+      "Gagal mengekspor data",
+      null,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+    );
+  }
 };
 
 /**
