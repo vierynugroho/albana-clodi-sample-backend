@@ -795,13 +795,13 @@ class ProductService {
         ...query,
         startDate: query.startDate
           ? new Date(query.startDate).toISOString()
-          : new Date().toISOString(),
+          : undefined,
         endDate: query.endDate
           ? new Date(query.endDate).toISOString()
-          : new Date().toISOString(),
+          : undefined,
       };
 
-      return exportData<
+      const result = await exportData<
         Prisma.ProductGetPayload<{
           include: {
             productVariants: {
@@ -916,6 +916,8 @@ class ProductService {
         "Produk",
         "Tidak ada data produk untuk di ekspor.",
       );
+
+      return result;
     } catch (ex) {
       console.error({ ex });
       const errorMessage = `Error exporting product: ${(ex as Error).message}`;
