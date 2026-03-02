@@ -1881,13 +1881,23 @@ class OrderService {
 
   public exportOrders = async (params: GetAllOrdersParams) => {
     try {
+      const exportParams = {
+        ...params,
+        startDate: params.startDate
+          ? new Date(params.startDate).toISOString()
+          : undefined,
+        endDate: params.endDate
+          ? new Date(params.endDate).toISOString()
+          : undefined,
+      };
+
       const formatter = new Intl.DateTimeFormat("id-ID", {
         timeZone: "Asia/Jakarta",
         dateStyle: "short",
       });
 
       return exportData<OrderWithRelations>(
-        params,
+        exportParams,
         async (where): Promise<OrderWithRelations[]> => {
           const queryParams = {
             productId: undefined as string | undefined,

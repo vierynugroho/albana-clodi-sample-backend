@@ -41,6 +41,8 @@ export const exportData = async <T>(
       };
     }
 
+    console.log({ where });
+
     if (month) {
       const monthNumber = Number.parseInt(month, 10) - 1;
       const yearNumber = year
@@ -96,6 +98,7 @@ export const exportData = async <T>(
     }
 
     const items = await fetchData(where);
+    console.log({ items });
 
     if (!items.length) {
       return ServiceResponse.failure(emptyMessage, null, StatusCodes.NOT_FOUND);

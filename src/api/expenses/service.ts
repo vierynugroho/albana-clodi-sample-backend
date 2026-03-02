@@ -37,21 +37,21 @@ class ExpenseService {
       return ServiceResponse.success(
         "Berhasil menambahkan data pengeluaran",
         result,
-        StatusCodes.CREATED
+        StatusCodes.CREATED,
       );
     } catch (error) {
       logger.error(error);
       return ServiceResponse.failure(
         "Gagal menambahkan data pengeluaran",
         null,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
 
   public updateExpense = async (
     id: string,
-    data: Partial<UpdateExpensesType["body"]>
+    data: Partial<UpdateExpensesType["body"]>,
   ) => {
     try {
       const itemPrice = data?.itemPrice || 0;
@@ -74,14 +74,14 @@ class ExpenseService {
       return ServiceResponse.success(
         "Berhasil mengubah data pengeluaran",
         updatedExpense,
-        StatusCodes.OK
+        StatusCodes.OK,
       );
     } catch (error) {
       logger.error(error);
       return ServiceResponse.failure(
         "Gagal mengubah data pengeluaran",
         null,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
@@ -95,14 +95,14 @@ class ExpenseService {
       return ServiceResponse.success(
         "Berhasil menghapus data pengeluaran",
         null,
-        StatusCodes.OK
+        StatusCodes.OK,
       );
     } catch (error) {
       logger.error(error);
       return ServiceResponse.failure(
         "Gagal menghapus data pengeluaran",
         null,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
@@ -117,21 +117,21 @@ class ExpenseService {
         return ServiceResponse.failure(
           "Data pengeluaran tidak ditemukan",
           null,
-          StatusCodes.NOT_FOUND
+          StatusCodes.NOT_FOUND,
         );
       }
 
       return ServiceResponse.success(
         "Berhasil mendapatkan detail pengeluaran",
         expense,
-        StatusCodes.OK
+        StatusCodes.OK,
       );
     } catch (error) {
       logger.error(error);
       return ServiceResponse.failure(
         "Gagal mendapatkan detail pengeluaran",
         null,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
@@ -291,14 +291,14 @@ class ExpenseService {
           totalData: count,
           data: expenses,
         },
-        StatusCodes.OK
+        StatusCodes.OK,
       );
     } catch (error) {
       logger.error(error);
       return ServiceResponse.failure(
         "Gagal mendapatkan data pengeluaran",
         null,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
@@ -310,8 +310,18 @@ class ExpenseService {
         dateStyle: "short",
       });
 
+      const exportParams = {
+        ...params,
+        startDate: params.startDate
+          ? new Date(params.startDate).toISOString()
+          : undefined,
+        endDate: params.endDate
+          ? new Date(params.endDate).toISOString()
+          : undefined,
+      };
+
       return exportData<Expense>(
-        params,
+        exportParams,
         async (where) => {
           return prismaClient().expense.findMany({
             where: where as Prisma.ExpenseWhereInput,
@@ -334,14 +344,14 @@ class ExpenseService {
             : "",
         }),
         "Pengeluaran",
-        "Tidak ada data pengeluaran untuk diekspor"
+        "Tidak ada data pengeluaran untuk diekspor",
       );
     } catch (error) {
       logger.error(error);
       return ServiceResponse.failure(
         "Gagal mengekspor data pengeluaran",
         null,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
@@ -362,7 +372,7 @@ class ExpenseService {
               ? (() => {
                   try {
                     const dateParts = String(row["Tanggal Pengeluaran"]).split(
-                      "/"
+                      "/",
                     );
                     if (dateParts.length === 3) {
                       // Format dd/mm/yyyy to yyyy-mm-dd
@@ -402,28 +412,28 @@ class ExpenseService {
             data: validatedData,
             skipDuplicates: true,
           });
-        }
+        },
       );
 
       if (!importResult.success || importResult.statusCode !== StatusCodes.OK) {
         return ServiceResponse.failure(
           `Gagal mengimpor data: ${importResult.message}`,
           null,
-          importResult.statusCode || StatusCodes.BAD_REQUEST
+          importResult.statusCode || StatusCodes.BAD_REQUEST,
         );
       }
 
       return ServiceResponse.success(
         "Berhasil mengimpor data pengeluaran",
         importResult.responseObject,
-        StatusCodes.OK
+        StatusCodes.OK,
       );
     } catch (error) {
       logger.error(error);
       return ServiceResponse.failure(
         "Gagal mengimpor data pengeluaran",
         null,
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
   };
